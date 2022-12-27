@@ -24,11 +24,12 @@ class AsalSayiBulABC:
         parametreler=[]
         olusan_parametre=0
         for x in range(self.parametre_sayisi):
-            olusan_parametre=int(random.random()*(self.Alt_Sinir-self.Ust_Sinir)+self.Alt_Sinir)
+            olusan_parametre=int(random.random()*(self.Ust_Sinir-self.Alt_Sinir)+self.Alt_Sinir)
             if(not(olusan_parametre==2)):
                 while olusan_parametre%2==0:
-                    olusan_parametre=int(random.random()*(self.Alt_Sinir-self.Ust_Sinir)+self.Alt_Sinir)
+                    olusan_parametre=int(random.random()*(self.Ust_Sinir-self.Alt_Sinir)+self.Alt_Sinir)
             parametreler.append(olusan_parametre)
+            print(olusan_parametre)
         return parametreler;
             
     def Nektar_olustur(self):
@@ -37,7 +38,7 @@ class AsalSayiBulABC:
             self.Nektarlar[x].parametreler=self.parametre_olustur()
             asal_sayi_miktarı=self.asal_sayisi_hesapla(self.Nektarlar[x]);
             self.Nektarlar[x].Fitness=self.fitness_hesapla(asal_sayi_miktarı);
-            
+            print(self.Nektarlar[x].parametreler)
         self.olasilik_hesaplama();
             
     def olasilik_hesaplama(self):
@@ -80,7 +81,7 @@ class AsalSayiBulABC:
             yeni_parametre_degeri=int(degisecekParametre+random.uniform(-1,1)*(degisecekParametre-komsuParametre))
             if(yeni_parametre_degeri>self.Ust_Sinir):
                 yeni_parametre_degeri=self.Ust_Sinir
-            elif(yeni_parametre_degeri<self.Alt_Sinir):
+            if(yeni_parametre_degeri<self.Alt_Sinir):
                 yeni_parametre_degeri=self.Alt_Sinir
             gecici_nektar=self.Nektar()
             gecici_nektar.parametreler=self.Nektarlar[i].parametreler.copy()
@@ -153,12 +154,12 @@ class AsalSayiBulABC:
     
 dongu_sayisi=5
 nektar_Miktarı=10
-parametre_sayisi=4,
+parametre_sayisi=int(4),
 limit=40;
 alt=100;
 ust=150
-dongu=5
-Go=AsalSayiBulABC(nektar_Miktarı,4,0,100,150,100);
+dongu=10
+Go=AsalSayiBulABC(nektar_Miktarı,4,limit,alt,ust,dongu);
 Go.main();
 
 
