@@ -19,6 +19,7 @@ class AsalSayiBulABC:
             self.Fitness=1;
             self.secilme_olasiligi=0;
             self.Limit=0;
+            self.cesitlik=0;
         
     def parametre_olustur(self):
         parametreler=[]
@@ -29,7 +30,6 @@ class AsalSayiBulABC:
                 while olusan_parametre%2==0:
                     olusan_parametre=int(random.random()*(self.Ust_Sinir-self.Alt_Sinir)+self.Alt_Sinir)
             parametreler.append(olusan_parametre)
-            print(olusan_parametre)
         return parametreler;
             
     def Nektar_olustur(self):
@@ -38,9 +38,24 @@ class AsalSayiBulABC:
             self.Nektarlar[x].parametreler=self.parametre_olustur()
             asal_sayi_miktarı=self.asal_sayisi_hesapla(self.Nektarlar[x]);
             self.Nektarlar[x].Fitness=self.fitness_hesapla(asal_sayi_miktarı);
-            print(self.Nektarlar[x].parametreler)
+            self.Nektarlar[x].cesitlik=self.cesitlik_hesapla(self.Nektarlar[x].parametreler)
+            print(self.Nektarlar[x].parametreler,self.Nektarlar[x].cesitlik)
         self.olasilik_hesaplama();
+
+    def cesitlik_hesapla(self,_parametreler):
+        cesitlik=0
+        for x in range(self.parametre_sayisi):
+            tek=True
+            for y in range(x+1,self.parametre_sayisi):
+                if _parametreler[x]==_parametreler[y]:
+                    tek=False
+                    break
+            if(tek and self.asal_kontrol(_parametreler[x])):
+                cesitlik+=1
+        return cesitlik
             
+
+
     def olasilik_hesaplama(self):
         self.toplam_fitness=0;
         for x in range(self.Nektar_Sayisi):
@@ -56,7 +71,7 @@ class AsalSayiBulABC:
         return sayi;
         
     def fitness_hesapla(self,asal_sayi_miktarı):
-        return (1 / (asal_sayi_miktarı + 1))
+        return (1 / (asal_sayi_miktarı+ + 1))
                  
     def asal_kontrol(self, sayi):
         asalDurum=False;
@@ -72,10 +87,12 @@ class AsalSayiBulABC:
         return asalDurum;
 
     def Isci_Ari_Fazi(self):
-        i=0;
+        i=0;#arı sayacı
         while(i<self.Nektar_Sayisi):# Tüm Nektarlar İçin Komşu Nektar Üretimi
             _degisecekParametre_index=int(random.random()*self.parametre_sayisi)
             komsu_nektar_index=int(random.random()*self.Nektar_Sayisi)
+            while(komsu_nektar_index==i):
+                komsu_nektar_index=int(random.random()*self.Nektar_Sayisi)
             degisecekParametre=self.Nektarlar[i].parametreler[_degisecekParametre_index]
             komsuParametre=self.Nektarlar[komsu_nektar_index].parametreler[_degisecekParametre_index]
             yeni_parametre_degeri=int(degisecekParametre+random.uniform(-1,1)*(degisecekParametre-komsuParametre))
@@ -86,9 +103,11 @@ class AsalSayiBulABC:
             gecici_nektar=self.Nektar()
             gecici_nektar.parametreler=self.Nektarlar[i].parametreler.copy()
             gecici_nektar.parametreler[_degisecekParametre_index]=yeni_parametre_degeri;
-            gecici_nektar.Fitness=self.fitness_hesapla(self.asal_sayisi_hesapla(gecici_nektar))
+            gecici_nektar.cesitlik=self.cesitlik_hesapla(gecici_nektar.parametreler)
+            gecici_nektar.Fitness=self.fitness_hesapla(self.asal_sayisi_hesapla(gecici_nektar)+gecici_nektar.cesitlik)
             if(self.Nektarlar[i].Fitness>gecici_nektar.Fitness):
                 self.Nektarlar[i].parametreler=gecici_nektar.parametreler.copy()
+                self.Nektarlar[i].cesitlik=gecici_nektar.cesitlik
                 self.Nektarlar[i].Fitness=gecici_nektar.Fitness
             else:
                 self.Nektarlar[i].Limit+=1 
@@ -104,6 +123,8 @@ class AsalSayiBulABC:
                 t+=1
                 _degisecekParametre_index=int(random.random()*self.parametre_sayisi)
                 komsu_nektar_index=int(random.random()*self.Nektar_Sayisi)
+                while(komsu_nektar_index==i):
+                    komsu_nektar_index=int(random.random()*self.Nektar_Sayisi)
                 degisecekParametre=self.Nektarlar[i].parametreler[_degisecekParametre_index]
                 komsuParametre=self.Nektarlar[komsu_nektar_index].parametreler[_degisecekParametre_index]
                 yeni_parametre_degeri=int(degisecekParametre+random.uniform(-1,1)*(degisecekParametre-komsuParametre))
@@ -114,9 +135,11 @@ class AsalSayiBulABC:
                 gecici_nektar=self.Nektar()
                 gecici_nektar.parametreler=self.Nektarlar[i].parametreler.copy()
                 gecici_nektar.parametreler[_degisecekParametre_index]=yeni_parametre_degeri;
+                gecici_nektar.cesitlik=self.cesitlik_hesapla(gecici_nektar.parametreler)
                 gecici_nektar.Fitness=self.fitness_hesapla(self.asal_sayisi_hesapla(gecici_nektar))
                 if(self.Nektarlar[i].Fitness>gecici_nektar.Fitness):
                     self.Nektarlar[i].parametreler=gecici_nektar.parametreler.copy()
+                    self.Nektarlar[i].cesitlik=gecici_nektar.cesitlik
                     self.Nektarlar[i].Fitness=gecici_nektar.Fitness
                 else:
                     self.Nektarlar[i].Limit+=1 
@@ -135,10 +158,12 @@ class AsalSayiBulABC:
 
     def Kasif_Ari_Fazi(self):
         for i in range(self.Nektar_Sayisi):
-            print(self.Nektarlar[i].parametreler,self.Nektarlar[i].Fitness)
+            #print(self.Nektarlar[i].parametreler,self.Nektarlar[i].Fitness)
             if(self.Nektarlar[i].Limit>=self.Son_Limit):
                 self.Nektarlar[i].parametreler=self.parametre_olustur();
-                self.Nektarlar[i].Fitness=self.fitness_hesapla(self.asal_sayisi_hesapla(self.Nektarlar[i]));
+                self.Nektarlar[i].cesitlik=self.cesitlik_hesapla(self.Nektarlar[i].parametreler)
+                self.Nektarlar[i].Limit=0
+                self.Nektarlar[i].Fitness=self.fitness_hesapla(self.asal_sayisi_hesapla(self.Nektarlar[i])+self.Nektarlar[i].cesitlik);
         
     def main(self):
         self.Nektar_olustur();
@@ -157,7 +182,7 @@ nektar_Miktarı=10
 parametre_sayisi=int(4),
 limit=40;
 alt=100;
-ust=150
+ust=200
 dongu=10
 Go=AsalSayiBulABC(nektar_Miktarı,4,limit,alt,ust,dongu);
 Go.main();
