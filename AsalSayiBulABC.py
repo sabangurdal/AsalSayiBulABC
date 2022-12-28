@@ -21,6 +21,7 @@ class AsalSayiBulABC:
             self.secilme_olasiligi=0;
             self.Limit=0;
             self.cesitlik=0;
+
     def Nektar_olustur(self):
         for x in range(self.Nektar_Sayisi):
             self.Nektarlar.append(self.Nektar())
@@ -52,7 +53,6 @@ class AsalSayiBulABC:
             if(tek and self.asal_kontrol(_parametreler[x])):
                 cesitlik+=1
         return cesitlik  
-
 
     def asal_sayisi_hesapla(self,nektar):
         sayi=0;
