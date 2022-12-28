@@ -179,7 +179,7 @@ class AsalSayiBulABC:
             self.Kasif_Ari_Fazi();
             self.Dongu_Say();
         if(self.bulundu):
-           print("Bulunan en iyi Çözüm ", self.Dongu,"Döngüde bulundu:")
+           print(self.Dongu,"Döngüde Kısıtlar Sağlandı.Bulunan Çözüm:")
            print("Parametreler:",self.en_iyi_nektar.parametreler,"Çeşitlilik:",self.en_iyi_nektar.cesitlik)
         else:
             print("Tüm Kısıtlar",self.Dongu, " Döngüde Sağlanamadı.Bulunan En İyi Çözüm:")
