@@ -21,7 +21,15 @@ class AsalSayiBulABC:
             self.secilme_olasiligi=0;
             self.Limit=0;
             self.cesitlik=0;
-        
+    def Nektar_olustur(self):
+        for x in range(self.Nektar_Sayisi):
+            self.Nektarlar.append(self.Nektar())
+            self.Nektarlar[x].parametreler=self.parametre_olustur()
+            asal_sayi_miktarı=self.asal_sayisi_hesapla(self.Nektarlar[x]);
+            self.Nektarlar[x].Fitness=self.fitness_hesapla(asal_sayi_miktarı);
+            self.Nektarlar[x].cesitlik=self.cesitlik_hesapla(self.Nektarlar[x].parametreler)
+        self.olasilik_hesaplama();
+
     def parametre_olustur(self):
         parametreler=[]
         olusan_parametre=0
@@ -32,15 +40,6 @@ class AsalSayiBulABC:
                     olusan_parametre=int(random.random()*(self.Ust_Sinir-self.Alt_Sinir)+self.Alt_Sinir)
             parametreler.append(olusan_parametre)
         return parametreler;
-            
-    def Nektar_olustur(self):
-        for x in range(self.Nektar_Sayisi):
-            self.Nektarlar.append(self.Nektar())
-            self.Nektarlar[x].parametreler=self.parametre_olustur()
-            asal_sayi_miktarı=self.asal_sayisi_hesapla(self.Nektarlar[x]);
-            self.Nektarlar[x].Fitness=self.fitness_hesapla(asal_sayi_miktarı);
-            self.Nektarlar[x].cesitlik=self.cesitlik_hesapla(self.Nektarlar[x].parametreler)
-        self.olasilik_hesaplama();
 
     def cesitlik_hesapla(self,_parametreler):
         cesitlik=0
@@ -52,16 +51,8 @@ class AsalSayiBulABC:
                     break
             if(tek and self.asal_kontrol(_parametreler[x])):
                 cesitlik+=1
-        return cesitlik
-            
+        return cesitlik  
 
-
-    def olasilik_hesaplama(self):
-        self.toplam_fitness=0;
-        for x in range(self.Nektar_Sayisi):
-            self.toplam_fitness+=self.Nektarlar[x].Fitness  
-        for y in range(self.Nektar_Sayisi):
-            self.Nektarlar[y].secilme_olasiligi=self.Nektarlar[y].Fitness/self.toplam_fitness
 
     def asal_sayisi_hesapla(self,nektar):
         sayi=0;
@@ -113,6 +104,13 @@ class AsalSayiBulABC:
                 self.Nektarlar[i].Limit+=1 
             i=i+1
     
+    def olasilik_hesaplama(self):
+        self.toplam_fitness=0;
+        for x in range(self.Nektar_Sayisi):
+            self.toplam_fitness+=self.Nektarlar[x].Fitness  
+        for y in range(self.Nektar_Sayisi):
+            self.Nektarlar[y].secilme_olasiligi=self.Nektarlar[y].Fitness/self.toplam_fitness
+
     def Gozcu_Ari_Fazi(self):
         i=0;#besin sayacı
         t=0;#Arı Sayacı
@@ -145,14 +143,6 @@ class AsalSayiBulABC:
         i+=1
         i=i % self.Nektar_Sayisi #dağıtılmayan arılar için besin sayacını sıfırlıyoruz
     
-    def Dongu_Say(self):
-        self.Dongu+=1
-        if self.Dongu_Boyutu<=self.Dongu:
-            self.durum=True
-        if self.en_iyi_nektar.cesitlik==self.parametre_sayisi and self.en_iyi_nektar.Fitness<=1/self.parametre_sayisi+1:
-            self.durum=True
-            self.bulundu=True
-    
     def En_iyi_belirleme(self):
         for i in range(self.Nektar_Sayisi):
             if(self.en_iyi_nektar.Fitness>self.Nektarlar[i].Fitness and 
@@ -168,6 +158,14 @@ class AsalSayiBulABC:
                 self.Nektarlar[i].cesitlik=self.cesitlik_hesapla(self.Nektarlar[i].parametreler)
                 self.Nektarlar[i].Limit=0
                 self.Nektarlar[i].Fitness=self.fitness_hesapla(self.asal_sayisi_hesapla(self.Nektarlar[i]));
+
+    def Dongu_Say(self):
+        self.Dongu+=1
+        if self.Dongu_Boyutu<=self.Dongu:
+            self.durum=True
+        if self.en_iyi_nektar.cesitlik==self.parametre_sayisi and self.en_iyi_nektar.Fitness<=1/self.parametre_sayisi+1:
+            self.durum=True
+            self.bulundu=True
         
     def main(self):
         self.Nektar_olustur();
@@ -193,7 +191,7 @@ alt=100
 ust=200
 dongu=1000
 
-Go=AsalSayiBulABC(nektar_Miktarı,parametre_sayisi,limit,alt,ust,dongu);
-Go.main();
+ABC=AsalSayiBulABC(nektar_Miktarı,parametre_sayisi,limit,alt,ust,dongu);
+ABC.main();
 
 
