@@ -12,6 +12,7 @@ class AsalSayiBulABC:
         self.Ust_Sinir=_Ust_Sinir;
         self.en_iyi_nektar=self.Nektar()
         self.toplam_fitness=0;
+        self.bulundu=False;
        
     class Nektar:
         def __init__(self):
@@ -39,7 +40,6 @@ class AsalSayiBulABC:
             asal_sayi_miktarı=self.asal_sayisi_hesapla(self.Nektarlar[x]);
             self.Nektarlar[x].Fitness=self.fitness_hesapla(asal_sayi_miktarı);
             self.Nektarlar[x].cesitlik=self.cesitlik_hesapla(self.Nektarlar[x].parametreler)
-            print(self.Nektarlar[x].parametreler,self.Nektarlar[x].cesitlik)
         self.olasilik_hesaplama();
 
     def cesitlik_hesapla(self,_parametreler):
@@ -71,7 +71,7 @@ class AsalSayiBulABC:
         return sayi;
         
     def fitness_hesapla(self,asal_sayi_miktarı):
-        return (1 / (asal_sayi_miktarı+ + 1))
+        return (1 / (asal_sayi_miktarı + 1))
                  
     def asal_kontrol(self, sayi):
         asalDurum=False;
@@ -104,14 +104,13 @@ class AsalSayiBulABC:
             gecici_nektar.parametreler=self.Nektarlar[i].parametreler.copy()
             gecici_nektar.parametreler[_degisecekParametre_index]=yeni_parametre_degeri;
             gecici_nektar.cesitlik=self.cesitlik_hesapla(gecici_nektar.parametreler)
-            gecici_nektar.Fitness=self.fitness_hesapla(self.asal_sayisi_hesapla(gecici_nektar)+gecici_nektar.cesitlik)
+            gecici_nektar.Fitness=self.fitness_hesapla(self.asal_sayisi_hesapla(gecici_nektar))
             if(self.Nektarlar[i].Fitness>gecici_nektar.Fitness):
                 self.Nektarlar[i].parametreler=gecici_nektar.parametreler.copy()
                 self.Nektarlar[i].cesitlik=gecici_nektar.cesitlik
                 self.Nektarlar[i].Fitness=gecici_nektar.Fitness
             else:
                 self.Nektarlar[i].Limit+=1 
-            #print(self.Nektarlar[i].Limit) 
             i=i+1
     
     def Gozcu_Ari_Fazi(self):
@@ -148,22 +147,27 @@ class AsalSayiBulABC:
     
     def Dongu_Say(self):
         self.Dongu+=1
-        self.durum=bool(self.Dongu >= self.Dongu_Boyutu)
-
+        if self.Dongu_Boyutu<=self.Dongu:
+            self.durum=True
+        if self.en_iyi_nektar.cesitlik==self.parametre_sayisi and self.en_iyi_nektar.Fitness<=1/self.parametre_sayisi+1:
+            self.durum=True
+            self.bulundu=True
+    
     def En_iyi_belirleme(self):
         for i in range(self.Nektar_Sayisi):
-            if(self.en_iyi_nektar.Fitness>self.Nektarlar[i].Fitness):
+            if(self.en_iyi_nektar.Fitness>self.Nektarlar[i].Fitness and 
+               self.en_iyi_nektar.cesitlik<self.Nektarlar[i].cesitlik):
                 self.en_iyi_nektar.parametreler=self.Nektarlar[i].parametreler.copy();
+                self.en_iyi_nektar.cesitlik=self.Nektarlar[i].cesitlik
                 self.en_iyi_nektar.Fitness=self.Nektarlar[i].Fitness
 
     def Kasif_Ari_Fazi(self):
         for i in range(self.Nektar_Sayisi):
-            #print(self.Nektarlar[i].parametreler,self.Nektarlar[i].Fitness)
             if(self.Nektarlar[i].Limit>=self.Son_Limit):
                 self.Nektarlar[i].parametreler=self.parametre_olustur();
                 self.Nektarlar[i].cesitlik=self.cesitlik_hesapla(self.Nektarlar[i].parametreler)
                 self.Nektarlar[i].Limit=0
-                self.Nektarlar[i].Fitness=self.fitness_hesapla(self.asal_sayisi_hesapla(self.Nektarlar[i])+self.Nektarlar[i].cesitlik);
+                self.Nektarlar[i].Fitness=self.fitness_hesapla(self.asal_sayisi_hesapla(self.Nektarlar[i]));
         
     def main(self):
         self.Nektar_olustur();
@@ -174,17 +178,22 @@ class AsalSayiBulABC:
             self.En_iyi_belirleme();
             self.Kasif_Ari_Fazi();
             self.Dongu_Say();
-        print("Bulunana en iyi Çözüm")
-        print(self.en_iyi_nektar.parametreler,self.en_iyi_nektar.Fitness)
+        if(self.bulundu):
+           print("Bulunan en iyi Çözüm ", self.Dongu,"Döngüde bulundu:")
+           print("Parametreler:",self.en_iyi_nektar.parametreler,"Çeşitlilik:",self.en_iyi_nektar.cesitlik)
+        else:
+            print("Tüm Kısıtlar",self.Dongu, " Döngüde Sağlanamadı.Bulunan En İyi Çözüm:")
+            print("Parametreler:",self.en_iyi_nektar.parametreler,"Çeşitlilik:",self.en_iyi_nektar.cesitlik)
     
 dongu_sayisi=5
 nektar_Miktarı=10
-parametre_sayisi=int(4),
-limit=40;
-alt=100;
+parametre_sayisi=4
+limit=40
+alt=100
 ust=200
-dongu=10
-Go=AsalSayiBulABC(nektar_Miktarı,4,limit,alt,ust,dongu);
+dongu=1000
+
+Go=AsalSayiBulABC(nektar_Miktarı,parametre_sayisi,limit,alt,ust,dongu);
 Go.main();
 
 
