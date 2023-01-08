@@ -1,6 +1,9 @@
 import random
+import os
+from openpyxl import Workbook,load_workbook
+from openpyxl.styles import Alignment
 class AsalSayiBulABC:
-    def __init__(self,_Nektar_Sayisi,_Parametre_Sayisi,_Limit,_Alt_Sinir,_Ust_Sinir,_Dongu_Boyutu):
+    def __init__(self,_Nektar_Sayisi,_Parametre_Sayisi,_Limit,_Alt_Sinir,_Ust_Sinir,_Dongu_Boyutu,_Evulasyon_limiti):
         self.durum=False
         self.Dongu=0;
         self.Dongu_Boyutu=_Dongu_Boyutu
@@ -13,6 +16,8 @@ class AsalSayiBulABC:
         self.en_iyi_nektar=self.Nektar()
         self.toplam_fitness=0;
         self.bulundu=False;
+        self.Evulasyon__limiti=_Evulasyon_limiti
+        self.Evulasyon_sayaci=0
        
     class Nektar:
         def __init__(self):
@@ -62,6 +67,7 @@ class AsalSayiBulABC:
         return sayi;
         
     def fitness_hesapla(self,asal_sayi_miktarı):
+        self.Evulasyon_sayaci+=1
         return (1 / (asal_sayi_miktarı + 1))
                  
     def asal_kontrol(self, sayi):
@@ -79,7 +85,7 @@ class AsalSayiBulABC:
 
     def Isci_Ari_Fazi(self):
         i=0;#arı sayacı
-        while(i<self.Nektar_Sayisi):# Tüm Nektarlar İçin Komşu Nektar Üretimi
+        while(i<self.Nektar_Sayisi and self.Evulasyon_sayaci<self.Evulasyon__limiti):# Tüm Nektarlar İçin Komşu Nektar Üretimi
             _degisecekParametre_index=int(random.random()*self.parametre_sayisi)
             komsu_nektar_index=int(random.random()*self.Nektar_Sayisi)
             while(komsu_nektar_index==i):
@@ -114,7 +120,7 @@ class AsalSayiBulABC:
     def Gozcu_Ari_Fazi(self):
         i=0;#besin sayacı
         t=0;#Arı Sayacı
-        while(t<self.Nektar_Sayisi):# Tüm Arılar İçin Olasılıksal seçim döngüsü
+        while(t<self.Nektar_Sayisi and self.Evulasyon_sayaci<self.Evulasyon__limiti):# Tüm Arılar İçin Olasılıksal seçim döngüsü
             r=random.random()
             if(r<self.Nektarlar[i].secilme_olasiligi):
                 t+=1
@@ -167,31 +173,60 @@ class AsalSayiBulABC:
             self.durum=True
             self.bulundu=True
         
+    def rapor_ekle(self):
+        eklenecek_dizi=[self.Dongu,self.Evulasyon_sayaci,self.durum]
+        for x in range(self.parametre_sayisi):
+            eklenecek_dizi.append(self.en_iyi_nektar.parametreler[x])
+        wb = load_workbook("data.xlsx")
+        ws = wb["Algoritma 1"]
+        ws.append(eklenecek_dizi)
+        wb.save("data.xlsx")
+    
+    def rapor_olustur(self):
+       eklenecek_dizi=["Döngü","Evülasyon","Durum"]
+       for x in range(self.parametre_sayisi):
+           eklenecek_dizi.append("Sayi "+str(x))
+       wb = Workbook()
+       ws = wb.active
+       ws.title = "Algoritma 1"
+       ws.append(eklenecek_dizi)
+       ws = wb.create_sheet("Algoritma 2")
+       ws.append(eklenecek_dizi)
+       wb.save("data.xlsx")
+ 
     def main(self):
         self.Nektar_olustur();
-        while(not(self.durum)):
+        while(not(self.durum) and self.Evulasyon_sayaci<self.Evulasyon__limiti):
             self.Isci_Ari_Fazi();
             self.olasilik_hesaplama();
             self.Gozcu_Ari_Fazi();
-            self.En_iyi_belirleme();
             self.Kasif_Ari_Fazi();
+            self.En_iyi_belirleme();
             self.Dongu_Say();
         if(self.bulundu):
-           print(self.Dongu,"Döngüde Kısıtlar Sağlandı.Bulunan Çözüm:")
+           print(self.Dongu,"Döngüde",self.Evulasyon_sayaci," Evulasyonda tüm Kısıtlar Sağlandı.Bulunan Çözüm:")
            print("Parametreler:",self.en_iyi_nektar.parametreler,"Çeşitlilik:",self.en_iyi_nektar.cesitlik)
         else:
-            print("Tüm Kısıtlar",self.Dongu, " Döngüde Sağlanamadı.Bulunan En İyi Çözüm:")
+            print("Tüm Kısıtlar",self.Dongu, " Döngüde ve ",self.Evulasyon_sayaci," Evulasyonda Sağlanamadı.Bulunan En İyi Çözüm:")
             print("Parametreler:",self.en_iyi_nektar.parametreler,"Çeşitlilik:",self.en_iyi_nektar.cesitlik)
+        if(not (os.path.exists("data.xlsx"))):
+            self.rapor_olustur();
+            print("Yeni Rapor")
+        else:
+            self.rapor_ekle()
+
     
 dongu_sayisi=5
 nektar_Miktarı=10
 parametre_sayisi=4
-limit=40
+limit=1000
 alt=100
 ust=200
 dongu=1000
+Evulasyon_Limiti=4000;
 
-ABC=AsalSayiBulABC(nektar_Miktarı,parametre_sayisi,limit,alt,ust,dongu);
-ABC.main();
+for x in range(10):
+    ABC=AsalSayiBulABC(nektar_Miktarı,parametre_sayisi,limit,alt,ust,dongu,Evulasyon_Limiti);
+    ABC.main();
 
 
